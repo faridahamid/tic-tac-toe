@@ -1,262 +1,115 @@
-#include<bits/stdc++.h>
-#include<conio.h>
+//Write a program that uses a 2D array to represent a tic-tac-toe board. Allow two players to take turns entering their moves, and check for win conditions after each move.
+#include <iostream>
 using namespace std;
 
-void up(int a[4][4])
-{
-	int i,j,lt,ri;
-	for(j=0;j<4;j++)
-	{
-		lt=0,ri=j;
-		for(i=1;i<4;i++)
-		{
-			if(a[i][j]!=0)
-			{
-				if(a[i-1][j]==0 || a[i-1][j]==a[i][j])
-				{
-					if(a[lt][ri]==a[i][j])
-					{
-						a[lt][ri]*=2;
-						a[i][j]=0;
-					}
-					else
-					{
-						if(a[lt][ri]==0)
-						{
-							a[lt][ri]=a[i][j];
-							a[i][j]=0;
-						}
-						else
-						{
-							a[++lt][ri]=a[i][j];
-							a[i][j]=0;
-						}
-					}
-				}
-				else lt++;
-			} 		}  		} 		}
+const int game_size= 3;
 
-void down(int a[4][4])
-{
-	int i,j,lt,ri;
-	for(j=0;j<4;j++)
-	{
-		lt=3,ri=j;
-		for(i=2;i>=0;i--)
-		{
-			if(a[i][j]!=0)
-			{
-				if(a[i+1][j]==0 || a[i+1][j]==a[i][j])
-				{
-					if(a[lt][ri]==a[i][j])
-					{
-						a[lt][ri]*=2;
-						a[i][j]=0;
-					}
-					else
-					{
-						if(a[lt][ri]==0)
-						{
-							a[lt][ri]=a[i][j];
-							a[i][j]=0;
-						}
-						else
-						{
-							a[--lt][ri]=a[i][j];
-							a[i][j]=0;
-						}
-					}
-				}
-				else lt--;
-	}	}	}	}
+char board[game_size][game_size];
 
-void left(int a[4][4])
-{
-	int i,j,lt,ri;
-	for(i=0;i<4;i++)
-	{
-		lt=i,ri=0;
-		for(j=1;j<4;j++)
-		{
-			if(a[i][j]!=0)
-			{
-				if(a[i][j-1]==0 || a[i][j-1]==a[i][j])
-				{
-					if(a[lt][ri]==a[i][j])
-					{
-						a[lt][ri]*=2;
-						a[i][j]=0;
-					}
-					else
-					{
-						if(a[lt][ri]==0)
-						{
-							a[lt][ri]=a[i][j];
-							a[i][j]=0;
-						}
-						else
-						{
-							a[lt][++ri]=a[i][j];
-							a[i][j]=0;
-						}
-					}
-				}
-				else ri++;
-			}	}	}	}
-
-void right(int a[4][4])
-{
-	int i,j,lt,ri;
-	for(i=0;i<4;i++)
-	{
-		lt=i,ri=3;
-		for(j=2;j>=0;j--)
-		{
-			if(a[i][j]!=0)
-			{
-				if(a[i][j+1]==0 || a[i][j+1]==a[i][j])
-				{
-					if(a[lt][ri]==a[i][j])
-					{
-						a[lt][ri]*=2;
-						a[i][j]=0;
-					}
-					else
-					{
-						if(a[lt][ri]==0)
-						{
-							a[lt][ri]=a[i][j];
-							a[i][j]=0;
-						}
-						else
-						{
-							a[lt][--ri]=a[i][j];
-							a[i][j]=0;
-						}
-					}
-				}
-				else ri--;
-			}
-		}
-	}
+void initializeBoard() {//intialize the board of game to empty spaces
+    for (int i = 0; i < game_size; i++) {
+        for (int j = 0; j < game_size; j++) {
+            board[i][j] = ' ';
+        }
+    }
 }
 
-void join(int a[4][4])
-{
-	int lt,ri;
-	srand(time(0));
-	while(1)
-	{
-		lt=rand()%4;
-		ri=rand()%4;
-		if(a[lt][ri]==0)
-		{
-			a[lt][ri]=pow(2,lt%2 + 1);
-			break;
-		}
-	}
-
+void displayBoard() {//function which cout the board with empty spaces
+    for (int i = 0; i < game_size; i++) {
+        for (int j = 0; j < game_size; j++) {
+            cout << board[i][j] << " ";
+        }
+        cout << endl;
+    }
 }
 
-void disp(int a[4][4])
-{
-	cout<<"\n\t\t Press Esc to quit the game";
-	cout<<"\n\n\n\n";
-	int i,j;
-	for(i=0;i<4;i++)
-	{
-		cout<<"\t\t\t\t-----------------\n\t\t\t\t";
-		for(j=0;j<4;j++)
-		{
-			if(a[i][j]==0) cout<<"|  ";
-			else
-				cout<<"| "<<a[i][j]<<" ";
-		}
-		cout<<"|"<<endl;
-	}
-	cout<<"\t\t\t\t-----------------\n";
+bool isValidMove(int row, int col) {//checks row and column are within the board boundaries and if the corresponding cell is empty.
+    if (row < 0 || row >=game_size || col < 0 || col >= game_size) {
+        return false;
+    }
+
+    if (board[row][col] != ' ') {
+        return false;
+    }
+
+    return true;
 }
 
-int check(int temp[4][4],int a[4][4])
-{
-	int fl=1,i,j;
-	for(i=0;i<4;i++)
-    	for(j=0;j<4;j++)
-    		if(temp[i][j]!=a[i][j])
-    		{
-    			fl=0;
-    			break;
-			}
-	return fl;
+bool isWin(char player) {
+    // Check row
+    for (int i = 0; i < game_size; i++) {
+        if (board[i][0] == player && board[i][1] == player && board[i][2] == player) {
+            return true;
+        }
+    }
+
+    // Check col
+    for (int j = 0; j < game_size; j++) {
+        if (board[0][j] == player && board[1][j] == player && board[2][j] == player) {
+            return true;
+        }
+    }
+
+    // Check diag
+    if (board[0][0] == player && board[1][1] == player && board[2][2] == player) {
+        return true;
+    }
+    if (board[0][2] == player && board[1][1] == player && board[2][0] == player) {
+        return true;
+    }
+
+    return false;
 }
 
-int checkgameover(int a[4][4])
-{
-	int fl=0,gl=0,i,j;
-	for(i=0;i<4;i++)
-    	for(j=0;j<4;j++)
-    		if(a[i][j]==0)
-    		{
-    			fl=1;
-				break;
-			}
-
-	for(i=0;i<3;i++)
-    	for(j=0;j<3;j++)
-    		if(a[i+1][j]==a[i][j] || a[i][j+1]==a[i][j])
-    		{
-    			gl=1;
-    			break;
-			}
-
-	if(fl || gl) return 1;
-	else return 0;
+bool isBoardFull() {
+    for (int i = 0; i < game_size; i++) {
+        for (int j = 0; j < game_size; j++) {
+            if (board[i][j] == ' ') {
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
-int main()
-{
-	cout<<"\n\n\n\n\t\t\t Let's Play' 2048 \n\n\n\t\t Press Enter key to continue....................";
-	getch();
-	system("cls");
-	int i1,i2,i3,i4,i,j;
-	int a[4][4]={0},temp[4][4]={0};
-	i1=rand()%4;
-	i2=rand()%4;
-	while(1)
-	{
-		i3=rand()%4;
-		i4=rand()%4;
-		if(i3!=i1 && i4!=i2) break;
-	}
-	a[i1][i2]=2;
-	a[i3][i4]=4;
-	disp(a);
+void playGame() {
+    char currentPlayer = 'X';
 
-	int ch;
-	while (1)
-    {
-    	for(i=0;i<4;i++)
-    		for(j=0;j<4;j++)
-    			temp[i][j]=a[i][j];
-    	ch=getch();
-    	system("cls");
-    	if(ch==72) up(a);
-    	if(ch==80) down(a);
-    	if(ch==75) left(a);
-    	if(ch==77) right(a);
-		if(ch==27) break;
+    while (true) {
+        displayBoard();
 
-		if(!check(temp,a))
-			join(a);
-		disp(a);
+        int row, col;
+        cout << "Player " << currentPlayer << ", enter your move  ";
+        cin >> row >> col;
 
-		if(!checkgameover(a))
-		{
-			cout<<"\n\n\n\t\t\t You've LOST The Game !!\n\n\n";
-			getch();
-			break;
-		}
-	}
-	return 0;
+        if (isValidMove(row, col)) {
+            board[row][col] = currentPlayer;
+
+            if (isWin(currentPlayer)) {
+                displayBoard();
+                cout << "Player " << currentPlayer << " wins!" << endl;
+                break;
+            } else if (isBoardFull()) {
+                displayBoard();
+                cout << "It's a draw!" << endl;
+                break;
+            }
+
+            currentPlayer = (currentPlayer == 'X') ? 'O' : 'X';
+        } else {
+            cout << "Invalid move. Try again." << endl;
+        }
+    }
 }
 
+int main() {
+    initializeBoard();
+    playGame();
+
+    return 0;
+}
+
+				
+
+
+   
